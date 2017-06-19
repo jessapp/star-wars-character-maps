@@ -6,6 +6,10 @@ from flask import (Flask, jsonify, render_template, redirect, request, flash,
                    session)
 from flask_debugtoolbar import DebugToolbarExtension
 
+import requests
+
+import json
+
 app = Flask(__name__)
 
 app.secret_key = "oisjdfonero87aw9ed8afsond"
@@ -16,7 +20,27 @@ app.jinja_env.undefined = StrictUndefined
 def index():
     """Homepage"""
 
-    return render_template("homepage.html")
+    character_info = {}
+
+    p = requests.get('http://swapi.co/api/people/')
+    people = p.json()
+
+    results = people['results']
+
+    for person in results:
+        name = person['name']
+        movies = person['films']
+        films = []
+        for movie in movies:
+            m = requests.get(movie)
+            movie_json = m.json()
+            title = movie_json['title']
+            films.append(title)
+        character_info[name] = films
+
+
+    return render_template("homepage.html",
+                            character_info=character_info)
 
 
 
